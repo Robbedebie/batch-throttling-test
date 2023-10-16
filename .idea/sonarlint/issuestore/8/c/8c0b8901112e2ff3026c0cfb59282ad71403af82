@@ -1,0 +1,11 @@
+
+‹
+java:S1128"iRemove this unused import 'org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration'.(í©ÊÑşÿÿÿÿ8Ğ¯”¿³1
+
+java:S1128"dRemove this unused import 'org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration'.(¦–·Ë8Ñ¯”¿³1
+“
+java:S1128"vRemove this unused import 'org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration'.(•àìğ8Ò¯”¿³1
+}
+java:S1128"`Remove this unused import 'org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration'.(½óÙ’8Ô¯”¿³1
+‹
+java:S1128	"iRemove this unused import 'org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration'.(“ìšúÿÿÿÿ8Õ¯”¿³1
