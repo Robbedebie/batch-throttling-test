@@ -9,26 +9,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.repository.support.JobRepositoryFactoryBean;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.support.ListItemWriter;
-import org.springframework.batch.support.DatabaseType;
-import org.springframework.batch.support.transaction.ResourcelessTransactionManager;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import javax.sql.DataSource;
+import org.springframework.transaction.PlatformTransactionManager;
 
 
 @Configuration
-@EnableAutoConfiguration
 public class ThrottlingBatchConfiguration {
-
     public static Logger Log = LoggerFactory.getLogger(ThrottlingBatchConfiguration.class);
 
     public ThrottlingBatchConfiguration() {
@@ -39,35 +30,10 @@ public class ThrottlingBatchConfiguration {
 
 
     @Bean
-    public ResourcelessTransactionManager transactionManager() {
-        return new ResourcelessTransactionManager();
-    }
-
-    @Bean
-    public JobRepository jobRepository() throws Exception {
-        JobRepositoryFactoryBean factory = new JobRepositoryFactoryBean();
-        factory.setDatabaseType(DatabaseType.H2.getProductName());
-        factory.setDataSource(dataSource());
-        factory.setTransactionManager(transactionManager());
-        return factory.getObject();
-    }
-
-    @Bean
-    public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:test");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("");
-        return dataSource;
-    }
-
-    @Bean
-    public Job job(Step stepProcessDummyPeople, ThrottlingBatchPartitionerJobExecutionListener jobExecutionListener) throws Exception {
-        return new JobBuilder("job",jobRepository())
-            .incrementer(new RunIdIncrementer())
+    public Job job(ThrottlingBatchPartitionerJobExecutionListener jobExecutionListener, PlatformTransactionManager transactionManager, JobRepository jobRepository) throws Exception {
+        return new JobBuilder("job", jobRepository)
             .listener(jobExecutionListener)
-            .start(stepProcessDummyPeople)
+            .start(stepProcessDummyPeople(transactionManager,jobRepository))
             .build();
     }
 
@@ -77,9 +43,9 @@ public class ThrottlingBatchConfiguration {
     }
 
     @Bean
-    public Step stepProcessDummyPeople() throws Exception {
-        return new StepBuilder("stepProcessDummyPeople",jobRepository())
-            .<DummyPerson, DummyPerson>chunk(10,transactionManager())
+    public Step stepProcessDummyPeople(PlatformTransactionManager transactionManager, JobRepository jobRepository) throws Exception {
+        return new StepBuilder("stepProcessDummyPeople", jobRepository)
+            .<DummyPerson, DummyPerson>chunk(10, transactionManager)
             .reader(getThrottlingBatchItemReader())
             .writer(itemWriter())
             .build();
