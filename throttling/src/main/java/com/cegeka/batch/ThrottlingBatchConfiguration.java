@@ -4,8 +4,7 @@ import com.cegeka.batch.throttling.DummyPerson;
 import com.cegeka.batch.throttling.ThrottlingBatchItemReader;
 import com.cegeka.batch.throttling.ThrottlingBatchPartitionerJobExecutionListener;
 import com.cegeka.batch.throttling.ThrottlingBatchProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.cegeka.batch.throttling.ThrottlingChunckListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -20,20 +19,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class ThrottlingBatchConfiguration {
-    public static Logger Log = LoggerFactory.getLogger(ThrottlingBatchConfiguration.class);
-
-    public ThrottlingBatchConfiguration() {
-        System.out.println("ThrottlingBatchConfiguration");
-        Log.debug("DEBUG TEST______________________________________________________________________________________________________");
-        Log.info("INFO TEST________________________________________________________________________________________________________");
-    }
-
 
     @Bean
-    public Job job(ThrottlingBatchPartitionerJobExecutionListener jobExecutionListener, PlatformTransactionManager transactionManager, JobRepository jobRepository) throws Exception {
+    public Job job(ThrottlingBatchPartitionerJobExecutionListener jobExecutionListener,
+                   PlatformTransactionManager transactionManager,
+                   JobRepository jobRepository) {
         return new JobBuilder("job", jobRepository)
             .listener(jobExecutionListener)
-            .start(stepProcessDummyPeople(transactionManager,jobRepository))
+            .start(stepProcessDummyPeople(transactionManager, jobRepository))
             .build();
     }
 
@@ -43,14 +36,15 @@ public class ThrottlingBatchConfiguration {
     }
 
     @Bean
-    public Step stepProcessDummyPeople(PlatformTransactionManager transactionManager, JobRepository jobRepository) throws Exception {
+    public Step stepProcessDummyPeople(PlatformTransactionManager transactionManager, JobRepository jobRepository) {
         return new StepBuilder("stepProcessDummyPeople", jobRepository)
             .<DummyPerson, DummyPerson>chunk(10, transactionManager)
+            .listener(getThrottlingChunckListener())
             .reader(getThrottlingBatchItemReader())
+            .processor(getThrottlingBatchProcessor())
             .writer(itemWriter())
             .build();
     }
-
 
     @Bean
     public ThrottlingBatchItemReader getThrottlingBatchItemReader() {
@@ -58,8 +52,13 @@ public class ThrottlingBatchConfiguration {
     }
 
     @Bean
-    public ThrottlingBatchProcessor throttlingBatchProcessor() {
+    public ThrottlingBatchProcessor getThrottlingBatchProcessor() {
         return new ThrottlingBatchProcessor();
+    }
+
+    @Bean
+    public ThrottlingChunckListener getThrottlingChunckListener() {
+        return new ThrottlingChunckListener();
     }
 
     @Bean
