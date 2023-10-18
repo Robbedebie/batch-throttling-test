@@ -4,7 +4,7 @@ import com.cegeka.batch.throttling.DummyPerson;
 import com.cegeka.batch.throttling.ThrottlingBatchItemReader;
 import com.cegeka.batch.throttling.ThrottlingBatchPartitionerJobExecutionListener;
 import com.cegeka.batch.throttling.ThrottlingBatchProcessor;
-import com.cegeka.batch.throttling.ThrottlingChunckListener;
+import com.cegeka.batch.throttling.ThrottlingChunkListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;
@@ -57,8 +57,8 @@ public class ThrottlingBatchConfiguration {
     }
 
     @Bean
-    public ThrottlingChunckListener getThrottlingChunckListener() {
-        return new ThrottlingChunckListener();
+    public ThrottlingChunkListener getThrottlingChunckListener() {
+        return new ThrottlingChunkListener();
     }
 
     @Bean

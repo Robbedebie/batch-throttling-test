@@ -5,7 +5,7 @@ import org.springframework.batch.core.scope.context.ChunkContext;
 
 import static java.lang.Thread.sleep;
 
-public class ThrottlingChunckListener implements ChunkListener {
+public class ThrottlingChunkListener implements ChunkListener {
 
     private long delay = 1000;
 
